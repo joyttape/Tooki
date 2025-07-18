@@ -30,7 +30,7 @@ const TelaFormularioAdocao = ({ route, navigation }) => {
 
   const handleChange = (campo, valor) => {
     setFormulario({ ...formulario, [campo]: valor });
-    setErros({ ...erros, [campo]: '' }); // limpa o erro ao digitar
+    setErros({ ...erros, [campo]: '' }); 
   };
 
   const validarFormulario = () => {
@@ -73,7 +73,7 @@ const TelaFormularioAdocao = ({ route, navigation }) => {
     console.log('Formulário enviado:', { petId, ...formulario });
 
     alert('Formulário enviado com sucesso!');
-    navigation.navigate('Inicio');
+    navigation.navigate('TelaInicial');
   };
 
   return (

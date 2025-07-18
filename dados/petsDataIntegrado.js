@@ -1,3 +1,4 @@
+import authService from '../servicos/AuthService';
 
 const pets = [
   {
@@ -174,4 +175,175 @@ const pets = [
 }
 ];
 
+export const obterTodosPets = () => {
+  return pets.filter(pet => pet.disponivel);
+};
+
+export const obterPetPorId = (id) => {
+  const pet = pets.find(pet => pet.id === id);
+  if (pet) {
+    pet.visualizacoes += 1;
+  }
+  return pet;
+};
+
+export const filtrarPets = (filtros) => {
+  let petsDisponiveis = pets.filter(pet => pet.disponivel);
+
+  if (filtros.tipo) {
+    petsDisponiveis = petsDisponiveis.filter(pet => 
+      pet.tipo.toLowerCase() === filtros.tipo.toLowerCase()
+    );
+  }
+
+  if (filtros.cidade) {
+    petsDisponiveis = petsDisponiveis.filter(pet => 
+      pet.cidade.toLowerCase().includes(filtros.cidade.toLowerCase())
+    );
+  }
+
+  if (filtros.estado) {
+    petsDisponiveis = petsDisponiveis.filter(pet => 
+      pet.estado.toLowerCase() === filtros.estado.toLowerCase()
+    );
+  }
+
+  if (filtros.sexo) {
+    petsDisponiveis = petsDisponiveis.filter(pet => 
+      pet.sexo.toLowerCase() === filtros.sexo.toLowerCase()
+    );
+  }
+
+  if (filtros.vacinado !== undefined) {
+    petsDisponiveis = petsDisponiveis.filter(pet => pet.vacina === filtros.vacinado);
+  }
+
+  if (filtros.castrado !== undefined) {
+    petsDisponiveis = petsDisponiveis.filter(pet => pet.castrar === filtros.castrado);
+  }
+
+  if (filtros.idadeMin) {
+    petsDisponiveis = petsDisponiveis.filter(pet => pet.idade >= filtros.idadeMin);
+  }
+
+  if (filtros.idadeMax) {
+    petsDisponiveis = petsDisponiveis.filter(pet => pet.idade <= filtros.idadeMax);
+  }
+
+  return petsDisponiveis;
+};
+
+export const buscarPetsPorNome = (nome) => {
+  return pets.filter(pet => 
+    pet.disponivel && 
+    pet.nome.toLowerCase().includes(nome.toLowerCase())
+  );
+};
+
+export const obterPetsFavoritos = () => {
+  const usuario = authService.obterUsuarioAtual();
+  if (!usuario) {
+    return [];
+  }
+
+  return pets.filter(pet => usuario.favoritos.includes(pet.id));
+};
+
+export const demonstrarInteresse = (petId) => {
+  const usuario = authService.obterUsuarioAtual();
+  if (!usuario) {
+    return {
+      sucesso: false,
+      mensagem: 'Usuário não está logado'
+    };
+  }
+
+  const pet = pets.find(p => p.id === petId);
+  if (!pet) {
+    return {
+      sucesso: false,
+      mensagem: 'Pet não encontrado'
+    };
+  }
+
+  if (!pet.disponivel) {
+    return {
+      sucesso: false,
+      mensagem: 'Pet não está mais disponível'
+    };
+  }
+
+  const jaInteressado = pet.interessados.some(interessado => interessado.usuarioId === usuario.id);
+  if (jaInteressado) {
+    return {
+      sucesso: false,
+      mensagem: 'Você já demonstrou interesse neste pet'
+    };
+  }
+
+  pet.interessados.push({
+    usuarioId: usuario.id,
+    nomeUsuario: usuario.nome,
+    emailUsuario: usuario.email,
+    telefoneUsuario: usuario.telefone,
+    dataInteresse: new Date().toISOString()
+  });
+
+  return {
+    sucesso: true,
+    mensagem: 'Interesse registrado com sucesso! A instituição entrará em contato.'
+  };
+};
+
+export const marcarPetComoAdotado = (petId, usuarioId) => {
+  const pet = pets.find(p => p.id === petId);
+  if (pet) {
+    pet.disponivel = false;
+    pet.dataAdocao = new Date().toISOString();
+    pet.adotadoPor = usuarioId;
+    
+    authService.registrarAdocaoPet(petId);
+    
+    return true;
+  }
+  return false;
+};
+
+export const obterEstatisticasGerais = () => {
+  const totalPets = pets.length;
+  const petsDisponiveis = pets.filter(pet => pet.disponivel).length;
+  const petsAdotados = pets.filter(pet => !pet.disponivel).length;
+  
+  const tiposPets = pets.reduce((acc, pet) => {
+    acc[pet.tipo] = (acc[pet.tipo] || 0) + 1;
+    return acc;
+  }, {});
+
+  const cidadesAtendidas = [...new Set(pets.map(pet => `${pet.cidade}, ${pet.estado}`))];
+
+  return {
+    totalPets,
+    petsDisponiveis,
+    petsAdotados,
+    tiposPets,
+    cidadesAtendidas: cidadesAtendidas.length,
+    listaCidades: cidadesAtendidas
+  };
+};
+
+export const obterPetsMaisVisualizados = (limite = 5) => {
+  return pets
+    .filter(pet => pet.disponivel)
+    .sort((a, b) => b.visualizacoes - a.visualizacoes)
+    .slice(0, limite);
+};
+
+export const obterPetsRecemChegados = (limite = 5) => {
+  return pets
+    .filter(pet => pet.disponivel)
+    .sort((a, b) => new Date(b.dataResgate) - new Date(a.dataResgate))
+    .slice(0, limite);
+};
+
 export default pets;
+

@@ -3,6 +3,8 @@ import TelaInicial from '../telas/TelaInicial';
 import TelaListaPets from '../telas/TelaListaPets';
 import TelaDetalhePet from '../telas/TelaDetalhePet';
 import TelaFormularioAdocao from '../telas/TelaFormularioAdocao';
+import TelaLogin from '../telas/TelaLogin';
+import TelaCadastro from '../telas/TelaCadastro';
 
 const Stack = createStackNavigator();
 
@@ -10,9 +12,19 @@ const NavegacaoPrincipal = () => {
   return (
     <Stack.Navigator initialRouteName="Inicio">
       <Stack.Screen 
-        name="Inicio" 
+        name="TelaInicial" 
         component={TelaInicial} 
         options={{ title: 'Adoção de Pets' }} 
+      />
+      <Stack.Screen 
+        name="TelaLogin" 
+        component={TelaLogin} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="TelaCadastro" 
+        component={TelaCadastro} 
+        options={{ headerShown: false }}
       />
       <Stack.Screen 
         name="ListaPets" 

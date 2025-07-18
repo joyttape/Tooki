@@ -1,4 +1,4 @@
-import pets from '../dados/petsData';
+import pets from '../dados/petsDataIntegrado';
 
 const PetService = {
   buscarPets: async () => {
