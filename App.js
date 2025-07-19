@@ -7,16 +7,15 @@ import TelaInicial from './telas/TelaInicial';
 import TelaListaPets from './telas/TelaListaPets';
 import TelaDetalhePet from './telas/TelaDetalhePet';
 import TelaFormularioAdocao from './telas/TelaFormularioAdocao';
-import TelaLogin from './telas/TelaLogin'; // Importar TelaLogin
-import TelaCadastro from './telas/TelaCadastro'; // Importar TelaCadastro
+import TelaLogin from './telas/TelaLogin'; 
+import TelaCadastro from './telas/TelaCadastro';
 
-import authService from './servicos/AuthService'; // Importar AuthService
+import authService from './servicos/AuthService';
 
 const Stack = createStackNavigator();
 
 const App = () => {
   useEffect(() => {
-    // Restaurar sessão ao inicializar o app
     authService.restaurarSessao();
   }, []);
 

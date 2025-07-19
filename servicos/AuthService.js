@@ -9,29 +9,24 @@ import {
   obterEstatisticasUsuario
 } from '../dados/userData';
 
-// Classe para gerenciar autenticação e sessão do usuário
 class AuthService {
   constructor() {
     this.usuarioLogado = null;
     this.listeners = [];
   }
 
-  // Adicionar listener para mudanças de estado de autenticação
   adicionarListener(callback) {
     this.listeners.push(callback);
   }
 
-  // Remover listener
   removerListener(callback) {
     this.listeners = this.listeners.filter(listener => listener !== callback);
   }
 
-  // Notificar todos os listeners sobre mudanças
   notificarListeners() {
     this.listeners.forEach(callback => callback(this.usuarioLogado));
   }
 
-  // Realizar login
   async login(email, senha) {
     try {
       const usuario = validarLogin(email, senha);
@@ -40,7 +35,6 @@ class AuthService {
         this.usuarioLogado = usuario;
         this.notificarListeners();
         
-        // Salvar dados de sessão (em produção, use AsyncStorage)
         if (typeof localStorage !== 'undefined') {
           localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
         }
@@ -64,12 +58,10 @@ class AuthService {
     }
   }
 
-  // Realizar cadastro
   async cadastrar(dadosUsuario) {
     try {
       const { nome, email, telefone, cidade, estado, senha } = dadosUsuario;
 
-      // Validações
       if (!nome || !email || !telefone || !cidade || !estado || !senha) {
         return {
           sucesso: false,
@@ -77,7 +69,6 @@ class AuthService {
         };
       }
 
-      // Verificar se email já existe
       if (emailJaExiste(email)) {
         return {
           sucesso: false,
@@ -85,7 +76,6 @@ class AuthService {
         };
       }
 
-      // Validar formato do email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         return {
@@ -94,7 +84,6 @@ class AuthService {
         };
       }
 
-      // Validar senha
       if (senha.length < 6) {
         return {
           sucesso: false,
@@ -102,17 +91,15 @@ class AuthService {
         };
       }
 
-      // Criar novo usuário
       const novoUsuario = adicionarUsuario({
         nome,
         email,
         telefone,
         cidade,
         estado,
-        senha // Em produção, faça hash da senha
+        senha 
       });
 
-      // Remover senha do retorno
       const { senha: _, ...usuarioSemSenha } = novoUsuario;
 
       return {
@@ -129,28 +116,23 @@ class AuthService {
     }
   }
 
-  // Realizar logout
   logout() {
     this.usuarioLogado = null;
     this.notificarListeners();
     
-    // Remover dados de sessão
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem('usuarioLogado');
     }
   }
 
-  // Verificar se usuário está logado
   estaLogado() {
     return this.usuarioLogado !== null;
   }
 
-  // Obter usuário atual
   obterUsuarioAtual() {
     return this.usuarioLogado;
   }
 
-  // Restaurar sessão (chamar ao inicializar o app)
   restaurarSessao() {
     try {
       if (typeof localStorage !== 'undefined') {
@@ -167,7 +149,6 @@ class AuthService {
     }
   }
 
-  // Adicionar pet aos favoritos do usuário logado
   async adicionarPetFavorito(petId) {
     if (!this.usuarioLogado) {
       return {
@@ -179,7 +160,6 @@ class AuthService {
     const sucesso = adicionarFavorito(this.usuarioLogado.id, petId);
     
     if (sucesso) {
-      // Atualizar dados do usuário logado
       this.usuarioLogado.favoritos.push(petId);
       this.notificarListeners();
       
@@ -195,7 +175,6 @@ class AuthService {
     }
   }
 
-  // Remover pet dos favoritos do usuário logado
   async removerPetFavorito(petId) {
     if (!this.usuarioLogado) {
       return {
@@ -207,7 +186,6 @@ class AuthService {
     const sucesso = removerFavorito(this.usuarioLogado.id, petId);
     
     if (sucesso) {
-      // Atualizar dados do usuário logado
       const index = this.usuarioLogado.favoritos.indexOf(petId);
       if (index > -1) {
         this.usuarioLogado.favoritos.splice(index, 1);
@@ -226,7 +204,6 @@ class AuthService {
     }
   }
 
-  // Registrar adoção para o usuário logado
   async registrarAdocaoPet(petId) {
     if (!this.usuarioLogado) {
       return {
@@ -238,7 +215,6 @@ class AuthService {
     const sucesso = registrarAdocao(this.usuarioLogado.id, petId);
     
     if (sucesso) {
-      // Atualizar dados do usuário logado
       const novaAdocao = {
         petId,
         dataAdocao: new Date().toISOString(),
@@ -259,7 +235,6 @@ class AuthService {
     }
   }
 
-  // Obter estatísticas do usuário logado
   obterEstatisticas() {
     if (!this.usuarioLogado) {
       return null;
@@ -268,7 +243,6 @@ class AuthService {
     return obterEstatisticasUsuario(this.usuarioLogado.id);
   }
 
-  // Verificar se pet está nos favoritos
   petEstaNosFavoritos(petId) {
     if (!this.usuarioLogado) {
       return false;
@@ -278,7 +252,6 @@ class AuthService {
   }
 }
 
-// Instância singleton do serviço de autenticação
 const authService = new AuthService();
 
 export default authService;
